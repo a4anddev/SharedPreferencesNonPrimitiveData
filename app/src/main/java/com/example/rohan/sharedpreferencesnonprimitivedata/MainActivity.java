@@ -9,8 +9,10 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.Type;
 import java.util.Arrays;
 
 public class MainActivity extends AppCompatActivity {
@@ -73,9 +75,60 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void saveGenericType(View view) {
+
+
+        Employee employeeStore = getEmployeeObject();
+
+        Foo<Employee> foo = new Foo<>();
+        foo.setObject(employeeStore);
+
+        SharedPreferences sp = getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sp.edit();
+
+//        serialisation
+        Gson gson = new Gson();
+        Type type = new TypeToken<Foo<Employee>>(){}.getType();
+
+        String jsonString = gson.toJson(foo, type);
+
+        Log.i(TAG, jsonString);
+
+        editor.putString(Constants.JSON_STRING_FOO,jsonString);
+        editor.apply();
+
+
     }
 
     public void loadGenericType(View view) {
+
+
+        SharedPreferences sp = getPreferences(Context.MODE_PRIVATE);
+
+        String jsonData = sp.getString(Constants.JSON_STRING_FOO,"N/A");
+
+        Log.i(TAG, jsonData);
+
+//       deserialization
+        Gson gson = new Gson();
+        Type type = new TypeToken<Foo<Employee>>(){}.getType();
+
+        Foo<Employee> employeeFoo = gson.fromJson(jsonData,type);
+
+        Employee employee = employeeFoo.getObject();
+
+        if (employee == null)
+            return;
+
+        String displayText =
+                employee.getName()
+                        +"\n" + employee.getProfession()
+                        +"\n" + employee.getProId()
+                        +"\n" + employee.getList().toString();
+
+        txvDisplay.setText(displayText);
+
+
+
     }
 
     private Employee getEmployeeObject(){
